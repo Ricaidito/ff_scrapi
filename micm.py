@@ -1,20 +1,31 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from pprint import pprint
 
 
 URL = "https://preciosjustos.micm.gob.do/"
+WAIT_TIME = 3
+
+
+def save_to_html(html_content, file_name):
+    with open(file_name, "w") as f:
+        f.write(html_content)
 
 
 def get_basic_basket_html(url: str) -> str:
     driver = webdriver.Chrome()
 
     driver.get(url)
-    driver.implicitly_wait(3)
+    driver.implicitly_wait(WAIT_TIME)
 
     html_doc = driver.page_source
 
     driver.quit()
+
+    save_to_html(html_doc, "basic_basket.html")
 
     return html_doc
 
@@ -23,13 +34,30 @@ def get_meat_html(url: str) -> str:
     driver = webdriver.Chrome()
 
     driver.get(url)
-    driver.implicitly_wait(3)
+    driver.implicitly_wait(WAIT_TIME)
 
-    html_doc = driver.page_source
+    # Switch to meat category
+    meat_category = driver.find_element(
+        By.CSS_SELECTOR, "li.nav-item[data-category='Carnes'] a.nav-link"
+    )
+    meat_category.click()
 
-    driver.quit()
+    # Wait for the click to be done
+    driver.implicitly_wait(WAIT_TIME)
 
-    return html_doc
+    # Find the "Mas Productos" button and click it
+    mas_productos_button = driver.find_element(
+        By.XPATH, "//*[contains(text(), 'Mas Productos')]"
+    )
+
+    # Click the button using javascript
+    driver.execute_script("arguments[0].click();", mas_productos_button)
+
+    driver.implicitly_wait(WAIT_TIME)
+
+    save_to_html(driver.page_source, "meat.html")
+
+    return driver.page_source
 
 
 def extract_basic_basket(html_content: str) -> list[dict[str, str]]:
@@ -56,9 +84,7 @@ def extract_meat_prices(html_content: str) -> list[dict[str, str]]:
 
 
 def main():
-    basic_basket_html = get_basic_basket_html(URL)
-    basic_basket = extract_basic_basket(basic_basket_html)
-    pprint(basic_basket)
+    x = get_meat_html(URL)
 
 
 if __name__ == "__main__":
