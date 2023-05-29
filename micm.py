@@ -55,6 +55,11 @@ def extract_meat_prices(html_content: str) -> list[dict[str, str]]:
     pass
 
 
-basic_basket_html = get_basic_basket_html(URL)
-basic_basket = extract_basic_basket(basic_basket_html)
-pprint(basic_basket)
+def main():
+    basic_basket_html = get_basic_basket_html(URL)
+    basic_basket = extract_basic_basket(basic_basket_html)
+    pprint(basic_basket)
+
+
+if __name__ == "__main__":
+    main()
