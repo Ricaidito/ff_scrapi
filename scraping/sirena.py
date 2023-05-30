@@ -6,7 +6,9 @@ from selenium.common.exceptions import NoSuchElementException
 from enum import Enum
 
 
-url = "https://sirena.do/products/category/carnes?page=1&limit=0&sort=1"
+# Test code
+category = "carnes"
+url = f"https://sirena.do/products/category/{category}?page=1&limit=0&sort=1"
 wait_time = 2
 
 driver_options = ChromeOptions()
