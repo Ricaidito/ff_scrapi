@@ -1,6 +1,7 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
+from selenium.webdriver import ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
 from pprint import pprint
 
@@ -17,7 +18,10 @@ def save_to_html(html_content, file_name):
 
 # Get the html of the basic basket
 def get_basic_basket_html(url: str) -> str:
-    driver = webdriver.Chrome()
+    driver_options = ChromeOptions()
+    driver_options.add_argument("--headless=new")
+
+    driver = webdriver.Chrome(options=driver_options)
 
     driver.get(url)
     driver.implicitly_wait(WAIT_TIME)
@@ -37,7 +41,10 @@ def save_basic_basket_html(url: str, file_name: str):
 
 # Get the html of a section
 def get_section_html(url: str, category_name: str) -> str:
-    driver = webdriver.Chrome()
+    driver_options = ChromeOptions()
+    driver_options.add_argument("--headless=new")
+
+    driver = webdriver.Chrome(options=driver_options)
 
     driver.get(url)
     driver.implicitly_wait(WAIT_TIME)
@@ -108,7 +115,7 @@ def extract_basic_basket(html_content: str) -> list[dict[str, str]]:
 
 
 # Extract the products and prices from a section
-def extract_section_prices(html_content: str) -> list[dict[str, str]]:
+def extract_section_prices(html_content: str, category: str) -> list[dict[str, str]]:
     items = []
     soup = BeautifulSoup(html_content, "html.parser")
 
@@ -121,6 +128,7 @@ def extract_section_prices(html_content: str) -> list[dict[str, str]]:
             {
                 "productName": name,
                 "productPrice": price,
+                "category": category.lower(),
             }
         )
 
@@ -131,11 +139,13 @@ def extract_section_prices(html_content: str) -> list[dict[str, str]]:
 def main():
     # save_get_section_html(URL, "Carnes", "carnes.html")
 
-    # products = extract_basic_basket(get_basic_basket_html(URL))
+    # products = extract_basic_basket(html_content=get_basic_basket_html(URL))
     # pprint(products)
 
-    products = extract_section_prices(get_section_html(URL, "Carnes"))
-    pprint(products)
+    products = extract_section_prices(
+        html_content=get_section_html(URL, "Vegetales"), category="vegetales"
+    )
+    pprint(products, indent=4)
 
 
 if __name__ == "__main__":
