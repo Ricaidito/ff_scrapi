@@ -16,9 +16,10 @@ class MICMPCategory(Enum):
 
 
 class MICMP:
-    def __init__(self, wait_time_seconds: int = 1):
+    def __init__(self, category: MICMPCategory, wait_time_seconds: int = 1):
         self.__url = "https://preciosjustos.micm.gob.do/"
         self.__wait_time = wait_time_seconds
+        self.__category = category
 
     def __get_basket_html(self) -> str:
         driver_options = ChromeOptions()
@@ -36,7 +37,7 @@ class MICMP:
 
         return html_doc
 
-    def __get_section_html(self, category_name: str) -> str:
+    def __get_section_html(self) -> str:
         driver_options = ChromeOptions()
         driver_options.add_argument("--headless=new")
 
@@ -47,7 +48,8 @@ class MICMP:
 
         # Switch to meat category
         meat_category = driver.find_element(
-            By.CSS_SELECTOR, f"li.nav-item[data-category='{category_name}'] a.nav-link"
+            By.CSS_SELECTOR,
+            f"li.nav-item[data-category='{self.__category.value}'] a.nav-link",
         )
         meat_category.click()
 
@@ -101,9 +103,7 @@ class MICMP:
 
         return basic_basket
 
-    def __extract_section(
-        self, html_content: str, category: str
-    ) -> list[dict[str, str]]:
+    def __extract_section(self, html_content: str) -> list[dict[str, str]]:
         items = []
         soup = BeautifulSoup(html_content, "html.parser")
 
@@ -116,7 +116,7 @@ class MICMP:
                 {
                     "productName": name,
                     "productPrice": price,
-                    "category": category.lower(),
+                    "category": self.__category.value.lower(),
                 }
             )
 
@@ -127,10 +127,13 @@ class MICMP:
         basic_basket = self.__extract_basket(html)
         return basic_basket
 
-    def get_prices_by_category(self, category: MICMPCategory):
-        html = self.__get_section_html(category.value)
-        items = self.__extract_section(html, category.value)
+    def get_prices_by_category(self):
+        html = self.__get_section_html()
+        items = self.__extract_section(html)
         return items
+
+    def switch_category(self, category: MICMPCategory):
+        self.__category = category
 
     def print_products(products: list[dict[str, str]]):
         if "category" in products[0]:
@@ -145,9 +148,9 @@ class MICMP:
 
 
 def main():
-    micmp = MICMP()
+    micmp = MICMP(MICMPCategory.CARNES)
     basket = micmp.get_basic_basket()
-    meat = micmp.get_prices_by_category(MICMPCategory.CARNES)
+    meat = micmp.get_prices_by_category()
 
     MICMP.print_products(basket)
     MICMP.print_products(meat)
