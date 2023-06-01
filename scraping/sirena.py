@@ -1,23 +1,10 @@
+from scraping.categories.category import SirenaCategory
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
-from enum import Enum
-
-
-class SirenaCategory(Enum):
-    CARNES = "carnes"
-    CONGELADOS = "congelados"
-    DELI = "deli"
-    DESPENSA = "despensa"
-    GALLETAS_Y_DULCES = "galletas-y-dulces"
-    LACTEOS_Y_HUEVOS = "lacteos-y-huevos"
-    LISTOS_PARA_COMER = "listos-para-comer"
-    PANADERIA_Y_REPOSTERIA = "panaderia-y-reposteria"
-    PESCADOS_Y_MARISCOS = "pescados-y-mariscos"
-    PICADERAS = "picaderas"
 
 
 class Sirena:

@@ -1,11 +1,12 @@
-from scraping.micm import MICMP, MICMPCategory
-from scraping.sirena import Sirena, SirenaCategory
+from scraping.categories.category import MICMPCategory, SirenaCategory
+from scraping.micm import MICMP
+from scraping.sirena import Sirena
 
 
 def main():
-    micmp = MICMP()
+    micmp = MICMP(MICMPCategory.CARNES)
     basket = micmp.get_basic_basket()
-    meat = micmp.get_prices_by_category(MICMPCategory.CARNES)
+    meat = micmp.get_prices_by_category()
 
     MICMP.print_products(basket)
     MICMP.print_products(meat)

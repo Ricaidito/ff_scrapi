@@ -1,18 +1,9 @@
+from scraping.categories.category import MICMPCategory
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
-from enum import Enum
-
-
-class MICMPCategory(Enum):
-    CARNES = "Carnes"
-    GRANOS = "Granos"
-    EMBUTIDOS = "Embutidos"
-    LACTEOS = "Lacteos"
-    PAN = "Pan"
-    VEGETALES = "Vegetales"
 
 
 class MICMP:
