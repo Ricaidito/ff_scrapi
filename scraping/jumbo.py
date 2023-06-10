@@ -1,12 +1,13 @@
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from bs4 import BeautifulSoup
+from categories.category import JumboCategory
 
 
-# TODO: Add categories and the ability to switch between them
 class Jumbo:
-    def __init__(self):
-        self.__url = "https://jumbo.com.do/supermercado/carnes-pescados-y-mariscos/carnes.html?product_list_limit=all"
+    def __init__(self, category: JumboCategory):
+        self.__category = category
+        self.__url = f"https://jumbo.com.do/supermercado/{self.__category.value}?product_list_limit=all"
 
     def __extract_products(self) -> str:
         driver_options = ChromeOptions()
@@ -37,22 +38,33 @@ class Jumbo:
                 {
                     "productName": name,
                     "productPrice": price,
-                    # "category": self.__category.value.lower(),
+                    "category": self.__category.value.lower(),
                 }
             )
 
         return items
+
+    def switch_category(self, category: JumboCategory):
+        self.__category = category
+        self.__url = f"https://jumbo.com.do/supermercado/{self.__category.value}?product_list_limit=all"
 
     def get_products(self) -> list[dict[str, str]]:
         html = self.__extract_products()
         products = self.__get_products(html)
         return products
 
+    def print_products(products: list[dict[str, str]]):
+        for product in products:
+            print(
+                f"{product['productName']}: {product['productPrice']} - {product['category']}"
+            )
+        print("\n")
+
 
 def main():
-    jumbo = Jumbo()
+    jumbo = Jumbo(JumboCategory.CARNES)
     meats = jumbo.get_products()
-    print(meats)
+    Jumbo.print_products(meats)
 
 
 if __name__ == "__main__":
