@@ -21,3 +21,10 @@ class SirenaCategory(Enum):
     PANADERIA_Y_REPOSTERIA = "panaderia-y-reposteria"
     PESCADOS_Y_MARISCOS = "pescados-y-mariscos"
     PICADERAS = "picaderas"
+
+
+# TODO: Add more categories
+# Ref link: https://jumbo.com.do/
+class JumboCategory(Enum):
+    CARNES = "carnes-pescados-y-mariscos/carnes.html"
+    PESCADOS = "carnes-pescados-y-mariscos/pescados-y-mariscos.html"
