@@ -23,7 +23,12 @@ time.sleep(7)
 # Get the page source
 page_source = driver.page_source
 
-first_page_source = driver.page_source
+soup = BeautifulSoup(page_source, 'html.parser')
+
+products = soup.find_all('li', class_='product-item')
+
+first_products = products.copy()
+
 
 while True:
 
@@ -36,12 +41,19 @@ while True:
 
     new_page_source = driver.page_source
 
-    if first_page_source == new_page_source:
+    new_souop = BeautifulSoup(new_page_source, 'html.parser')
+
+    new_products = new_souop.find_all('li', class_='product-item')
+
+    # print(new_products)
+
+    if first_products == new_products:
         break
     else:
-        page_source += new_page_source
+        products.append(new_products)
+        print('New products added')
 
 
-print(page_source)
+# print(products)
 
 driver.quit()
