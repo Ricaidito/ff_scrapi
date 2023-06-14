@@ -1,45 +1,39 @@
-from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ChromeOptions
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
 import time
 
-url = 'https://supermercadosnacional.com/carnes-pescados-y-mariscos/carnes'
+# Initialize the Chrome driver
+driver_options = ChromeOptions()
+driver_options.add_argument("--headless=new")
+driver = webdriver.Chrome(options=driver_options)
 
-def page_source_html(driverLink):
+# Open the webpage
+driver.get(f'https://supermercadosnacional.com/carnes-pescados-y-mariscos/carnes/res')
 
-    # Inicializa el driver de Selenium (Asegúrate de tener el driver correcto para tu navegador y SO)
-    driver_options = ChromeOptions()
-    # driver_options.add_argument("--headless=new")
-    driver = webdriver.Chrome(options=driver_options)
-    # Abre la página
-    driver.get(driverLink)
+SCROLL_PAUSE_TIME = 5
 
-    last_height = driver.execute_script("return document.body.scrollHeight")
+# Get scroll height
+last_height = driver.execute_script("return document.body.scrollHeight")
 
-    while True:
-        # scroll down to bottom
-        driver.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+while True:
+    # Scroll down to bottom
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-        # wait to load page
-        time.sleep(20)
+    # Wait to load page
+    time.sleep(SCROLL_PAUSE_TIME)
 
-        # calculate new scroll height and compare with last scroll height
-        new_height = driver.execute_script("return document.body.scrollHeight")
-        if new_height == last_height:
-            break
-        last_height = new_height
-
-    # get page source
-    page_source = driver.page_source
-
-    driver.quit()
-
-    return page_source
+    # Calculate new scroll height and compare with last scroll height
+    new_height = driver.execute_script("return document.body.scrollHeight")
+    if new_height == last_height:
+        break
+    last_height = new_height
 
 
-# Obtiene el contenido de la página
-html = page_source_html(url)
+html = driver.page_source
 
 # Utiliza Beautiful Soup para analizar el contenido
 soup = BeautifulSoup(html, 'html.parser')
@@ -56,4 +50,4 @@ for product in products:
     # print(price)
     print(f'Producto: {name}, Precio: {price}')
 
-# Cierra el driver
+driver.quit()
