@@ -1,53 +1,74 @@
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
 
-# Initialize the Chrome driver
-driver_options = ChromeOptions()
-driver_options.add_argument("--headless=new")
-driver = webdriver.Chrome(options=driver_options)
 
-# Open the webpage
-driver.get(f'https://supermercadosnacional.com/carnes-pescados-y-mariscos/carnes/res')
+class Nacional:
+    def __init__(self, wait_time_seconds: int = 5):
+        self.__wait_time = wait_time_seconds
 
-SCROLL_PAUSE_TIME = 5
+    def __extract_products(self) -> list[dict[str, str]]:
+        driver_options = ChromeOptions()
+        driver_options.add_argument("--headless=new")
+        driver = webdriver.Chrome(options=driver_options)
 
-# Get scroll height
-last_height = driver.execute_script("return document.body.scrollHeight")
+        driver.get(
+            "https://supermercadosnacional.com/carnes-pescados-y-mariscos/carnes/res"
+        )
 
-while True:
-    # Scroll down to bottom
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        last_height = driver.execute_script("return document.body.scrollHeight")
 
-    # Wait to load page
-    time.sleep(SCROLL_PAUSE_TIME)
+        while True:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-    # Calculate new scroll height and compare with last scroll height
-    new_height = driver.execute_script("return document.body.scrollHeight")
-    if new_height == last_height:
-        break
-    last_height = new_height
+            time.sleep(self.__wait_time)
+
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+            last_height = new_height
+
+        html = driver.page_source
+
+        items = []
+
+        soup = BeautifulSoup(html, "html.parser")
+
+        products = soup.find_all("li", class_="product-item")
+
+        for product in products:
+            name = product.find("a", class_="product-item-link").text.strip()
+            price = product.find("span", class_="price").text.strip()
+            items.append(
+                {
+                    "productName": name,
+                    "productPrice": price,
+                    "category": "res",
+                }
+            )
+
+        driver.quit()
+
+        return items
+
+    def get_products(self) -> list[dict[str, str]]:
+        products = self.__extract_products()
+        return products
+
+    def print_products(products: list[dict[str, str]]):
+        for product in products:
+            print(
+                f"{product['productName']}: {product['productPrice']} - {product['category']}"
+            )
+        print("\n")
 
 
-html = driver.page_source
+def main():
+    nacional = Nacional()
+    products = nacional.get_products()
+    Nacional.print_products(products)
 
-# Utiliza Beautiful Soup para analizar el contenido
-soup = BeautifulSoup(html, 'html.parser')
 
-# Encuentra todos los productos y sus precios
-products = soup.find_all('li', class_='product-item') # Ajusta la clase según sea necesario
-
-# print(products)
-
-for product in products:
-    name = product.find('a', class_='product-item-link').text.strip() # Ajusta la clase según sea necesario
-    # print(name)
-    price = product.find('span', class_='price').text.strip() # Ajusta la clase según sea necesario
-    # print(price)
-    print(f'Producto: {name}, Precio: {price}')
-
-driver.quit()
+if __name__ == "__main__":
+    main()
