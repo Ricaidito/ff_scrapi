@@ -28,3 +28,8 @@ class SirenaCategory(Enum):
 class JumboCategory(Enum):
     CARNES = "carnes-pescados-y-mariscos/carnes.html"
     PESCADOS = "carnes-pescados-y-mariscos/pescados-y-mariscos.html"
+
+
+# TODO: Make this class and implement the categories in the nacional.py file
+class NacionalCategory(Enum):
+    pass
