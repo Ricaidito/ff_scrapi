@@ -12,7 +12,13 @@ app = FastAPI()
 product_collection = DBService().get_collection("products")
 
 
-@app.get("/", description="Root of the API, returns the docs url")
+@app.get(
+    "/",
+    description="Root of the API, returns the docs url",
+    responses={
+        200: {"description": "Root of the API, returns the docs url"},
+    },
+)
 def api_root():
     return {"docs": f"http://localhost:{PORT}/docs"}
 
@@ -21,6 +27,10 @@ def api_root():
     "/products",
     response_model=list[Product],
     description="Get all products",
+    responses={
+        200: {"description": "Get all products"},
+        400: {"description": "Page or limit value must be greater than 0."},
+    },
 )
 def get_products(page: int = 1, limit: int = 10):
     if page <= 0 or limit <= 0:
@@ -42,6 +52,10 @@ def get_products(page: int = 1, limit: int = 10):
     "/product/{product_id}",
     response_model=Product,
     description="Get a product by id",
+    responses={
+        200: {"description": "Get a product by id"},
+        404: {"description": "Product not found"},
+    },
 )
 def get_product(product_id: str):
     product = serialize_product(
@@ -61,6 +75,9 @@ def get_product(product_id: str):
     "/basic-basket",
     response_model=BasicBasket,
     description="Get the basic basket",
+    responses={
+        200: {"description": "Get the basic basket"},
+    },
 )
 def get_basic_basket():
     basic_basket_products = serialize_products(
