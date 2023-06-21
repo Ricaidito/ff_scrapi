@@ -4,10 +4,13 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
+from datetime import datetime
 
 
 class MICMP:
-    def __init__(self, category: MICMPCategory, wait_time_seconds: int = 1):
+    def __init__(
+        self, category: MICMPCategory = MICMPCategory.CARNES, wait_time_seconds: int = 1
+    ):
         self.__url = "https://preciosjustos.micm.gob.do/"
         self.__wait_time = wait_time_seconds
         self.__category = category
@@ -89,6 +92,8 @@ class MICMP:
                 {
                     "productName": name,
                     "productPrice": price,
+                    "category": "basic_basket",
+                    "extractionDate": str(datetime.now()).split(".")[0],
                 }
             )
 
@@ -108,6 +113,8 @@ class MICMP:
                     "productName": name,
                     "productPrice": price,
                     "category": self.__category.value.lower(),
+                    "origin": "micmp",
+                    "extractionDate": str(datetime.now()).split(".")[0],
                 }
             )
 
@@ -139,12 +146,9 @@ class MICMP:
 
 
 def main():
-    micmp = MICMP(MICMPCategory.CARNES)
+    micmp = MICMP()
     basket = micmp.get_basic_basket()
-    meat = micmp.get_prices_by_category()
-
     MICMP.print_products(basket)
-    MICMP.print_products(meat)
 
 
 if __name__ == "__main__":

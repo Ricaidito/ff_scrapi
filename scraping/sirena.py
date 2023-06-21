@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
+from datetime import datetime
 
 
 class Sirena:
@@ -45,6 +46,8 @@ class Sirena:
                     "productName": name,
                     "productPrice": price,
                     "category": self.__category.value.lower(),
+                    "origin": "sirena",
+                    "extractionDate": str(datetime.now()).split(".")[0],
                 }
             )
         return items
