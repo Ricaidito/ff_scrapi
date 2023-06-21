@@ -10,6 +10,8 @@ class Product(BaseModel):
 
 
 def serialize_product(product) -> Product:
+    if product is None:
+        return None
     return {**product, "id": str(product["_id"])}
 
 
