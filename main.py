@@ -18,8 +18,11 @@ def api_root():
 
 
 @app.get("/products", response_model=list[Product], description="Get all products")
-def get_products():
-    products = serialize_products(product_collection.find().limit(10))
+def get_products(page: int = 1, limit: int = 10):
+    skip_value = (page - 1) * limit
+    products = serialize_products(
+        product_collection.find().skip(skip_value).limit(limit)
+    )
     return products
 
 

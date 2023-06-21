@@ -28,6 +28,14 @@ class SirenaCategory(Enum):
 class JumboCategory(Enum):
     CARNES = "carnes-pescados-y-mariscos/carnes.html"
     PESCADOS = "carnes-pescados-y-mariscos/pescados-y-mariscos.html"
+    LACTEOS = "lacteos-y-huevos/lacteos.html"
+    QUESOS = "lacteos-y-huevos/quesos.html"
+    HUEVOS = "lacteos-y-huevos/huevos.html"
+    FRUTAS_FRESCAS = "frutas-y-verduras-frescas/frutas-frescas.html"
+    HORTALIZAS = "frutas-y-verduras-frescas/hortalizas.html"
+    VIVERES = "frutas-y-verduras-frescas/viveres.html"
+    JAMONES = "embutidos-y-charcuteria/jamones-cocidos-y-curados.html"
+    SALAMIS = "embutidos-y-charcuteria/salami-cocido-y-curado.html"
 
 
 # TODO: Make this class and implement the categories in the nacional.py file
