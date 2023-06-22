@@ -32,6 +32,9 @@ class Sirena:
 
         return html_doc
 
+    def __parse_price(self, price: str) -> float:
+        return float(price.split("$")[1].replace(",", ""))
+
     def __extract_image_url(self, image: str) -> str:
         return image.split("(")[1].split(")")[0]
 
@@ -48,7 +51,7 @@ class Sirena:
             items.append(
                 {
                     "productName": name,
-                    "productPrice": price,
+                    "productPrice": self.__parse_price(price),
                     "category": self.__category.value.lower(),
                     "imageUrl": self.__extract_image_url(image),
                     "origin": "sirena",
