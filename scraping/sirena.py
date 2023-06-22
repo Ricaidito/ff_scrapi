@@ -32,23 +32,25 @@ class Sirena:
 
         return html_doc
 
+    def __extract_image_url(self, image: str) -> str:
+        return image.split("(")[1].split(")")[0]
+
     def __get_products(self, html_content: str) -> list[dict[str, str]]:
         items = []
         soup = BeautifulSoup(html_content, "html.parser")
 
-        products = soup.find_all("div", class_="item-product-info")
+        products = soup.find_all("div", class_="item-product")
 
         for product in products:
-            # print(str(product) + "\n")
             name = product.find("p", class_="item-product-title").text.strip()
             price = product.find("p", class_="item-product-price").strong.text.strip()
-            # image = product.find("p", class_="item-product-title").find("a")["href"]
-            # print(image)
+            image = product.find("a", class_="item-product-image")["style"]
             items.append(
                 {
                     "productName": name,
                     "productPrice": price,
                     "category": self.__category.value.lower(),
+                    "imageUrl": self.__extract_image_url(image),
                     "origin": "sirena",
                     "extractionDate": str(datetime.now()).split(".")[0],
                 }
