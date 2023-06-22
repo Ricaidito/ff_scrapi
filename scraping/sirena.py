@@ -1,4 +1,4 @@
-from scraping.categories.category import SirenaCategory
+from categories.category import SirenaCategory
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.support.ui import WebDriverWait
@@ -39,8 +39,11 @@ class Sirena:
         products = soup.find_all("div", class_="item-product-info")
 
         for product in products:
+            # print(str(product) + "\n")
             name = product.find("p", class_="item-product-title").text.strip()
             price = product.find("p", class_="item-product-price").strong.text.strip()
+            # image = product.find("p", class_="item-product-title").find("a")["href"]
+            # print(image)
             items.append(
                 {
                     "productName": name,
@@ -72,11 +75,8 @@ class Sirena:
 def main():
     sirena = Sirena(SirenaCategory.CARNES)
     meats = sirena.get_products()
-    sirena.switch_category(SirenaCategory.DELI)
-    deli = sirena.get_products()
 
     Sirena.print_products(meats)
-    Sirena.print_products(deli)
 
 
 if __name__ == "__main__":

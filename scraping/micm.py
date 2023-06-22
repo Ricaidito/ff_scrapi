@@ -1,10 +1,11 @@
-from scraping.categories.category import MICMPCategory
+from categories.category import MICMPCategory
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime
+from db.db_service import DBService
 
 
 class MICMP:
@@ -79,6 +80,9 @@ class MICMP:
 
         return html_content
 
+    def __parse_price(self, price: str) -> float:
+        return float(price.split(" ")[1])
+
     def __extract_basket(self, html_content: str) -> list[dict[str, str]]:
         basic_basket = []
         soup = BeautifulSoup(html_content, "html.parser")
@@ -88,11 +92,14 @@ class MICMP:
         for product in products:
             name = product.find("span", class_="productTitle").text.strip()
             price = product.find("strong", class_="productPrice").text.strip()
+            image = product.find("img").get("src")
             basic_basket.append(
                 {
                     "productName": name,
-                    "productPrice": price,
-                    "category": "basic_basket",
+                    "productPrice": self.__parse_price(price),
+                    "category": "basket",
+                    "imageUrl": f"https://preciosjustos.micm.gob.do/{image}",
+                    "origin": "micmp",
                     "extractionDate": str(datetime.now()).split(".")[0],
                 }
             )
@@ -108,11 +115,13 @@ class MICMP:
         for product in products:
             name = product.find("span", class_="productTitle").text.strip()
             price = product.find("strong", class_="productPrice").text.strip()
+            image = product.find("img").get("src")
             items.append(
                 {
                     "productName": name,
-                    "productPrice": price,
+                    "productPrice": self.__parse_price(price),
                     "category": self.__category.value.lower(),
+                    "imageUrl": f"https://preciosjustos.micm.gob.do/{image}",
                     "origin": "micmp",
                     "extractionDate": str(datetime.now()).split(".")[0],
                 }
@@ -146,9 +155,25 @@ class MICMP:
 
 
 def main():
-    micmp = MICMP()
-    basket = micmp.get_basic_basket()
-    MICMP.print_products(basket)
+    products_collection = DBService().get_collection("products")
+    micmp_categories = [
+        MICMPCategory.CARNES,
+        MICMPCategory.GRANOS,
+        MICMPCategory.EMBUTIDOS,
+        MICMPCategory.LACTEOS,
+        MICMPCategory.PAN,
+        MICMPCategory.VEGETALES,
+    ]
+
+    # basic_basket = MICMP().get_basic_basket()
+    # products_collection.insert_many(basic_basket)
+
+    # for category in micmp_categories:
+    #     micmp = MICMP(category)
+    #     products = micmp.get_prices_by_category()
+    #     products_collection.insert_many(products)
+
+    print("Hi")
 
 
 if __name__ == "__main__":

@@ -9,38 +9,37 @@ path = "reporting/reports/"
 pdf_filename = path + "prices_report.pdf"
 
 # Retrieve data from your list of dictionaries
-# Replace the following line with your MongoDB retrieval code
 data = [
     {
-        "id": "1",
+        "_id": "1",
         "Nombre": "Aceite",
         "Precio": "RD$ 96",
         "Categoría": "Canasta básica",
         "Fecha de extración": "2023-06-20",
     },
     {
-        "id": "2",
+        "_id": "2",
         "Nombre": "Pollo",
         "Precio": "RD$ 201",
         "Categoría": "Canasta básica",
         "Fecha de extración": "2023-06-20",
     },
     {
-        "id": "3",
+        "_id": "3",
         "Nombre": "Arroz",
         "Precio": "RD$ 383",
         "Categoría": "Canasta básica",
         "Fecha de extración": "2023-06-20",
     },
     {
-        "id": "4",
+        "_id": "4",
         "Nombre": "Filete de res",
         "Precio": "RD$ 197",
         "Categoría": "Canasta básica",
         "Fecha de extración": "2023-06-20",
     },
     {
-        "id": "5",
+        "_id": "5",
         "Nombre": "Plátano verde",
         "Precio": "RD$ 15 unid.",
         "Categoría": "Canasta básica",
@@ -48,8 +47,8 @@ data = [
     },
 ]
 
-# Convert the list of dictionaries to a pandas DataFrame, excluding the "id" field
-df = pd.DataFrame(data).drop("id", axis=1)
+# Convert the list of dictionaries to a pandas DataFrame, excluding the "_id" field
+df = pd.DataFrame(data).drop("_id", axis=1)
 
 # Create a SimpleDocTemplate object with the specified PDF filename
 pdf = SimpleDocTemplate(pdf_filename, pagesize=letter)
