@@ -1,11 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
+from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import time
 
 
 class Nacional:
-    def __init__(self, wait_time_seconds: int = 5):
+    def __init__(self, wait_time_seconds: int = 7):
         self.__wait_time = wait_time_seconds
 
     def __extract_products(self) -> list[dict[str, str]]:
@@ -14,7 +15,7 @@ class Nacional:
         driver = webdriver.Chrome(options=driver_options)
 
         driver.get(
-            "https://supermercadosnacional.com/carnes-pescados-y-mariscos/carnes/res"
+            "https://supermercadosnacional.com/lacteos-y-huevos/leches"
         )
 
         last_height = driver.execute_script("return document.body.scrollHeight")
@@ -25,8 +26,24 @@ class Nacional:
             time.sleep(self.__wait_time)
 
             new_height = driver.execute_script("return document.body.scrollHeight")
-            if new_height == last_height:
-                break
+
+            try:
+                mas_productos_button = driver.find_element(
+                    By.XPATH, "//*[contains(text(), 'Ver Más')]"
+                )
+
+                driver.execute_script("arguments[0].click();", mas_productos_button)
+                time.sleep(self.__wait_time)
+
+                if not mas_productos_button.is_displayed():
+                    if new_height == last_height:
+                        break
+
+            except Exception as e:
+                print(e)
+                if new_height == last_height:
+                    break
+
             last_height = new_height
 
         html = driver.page_source
