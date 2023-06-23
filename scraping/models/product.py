@@ -4,8 +4,10 @@ from pydantic import BaseModel
 class Product(BaseModel):
     id: str
     productName: str
-    productPrice: str
+    productPrice: float
     category: str
+    origin: str
+    imageUrl: str
     extractionDate: str
 
 
