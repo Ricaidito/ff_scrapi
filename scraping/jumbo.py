@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from bs4 import BeautifulSoup
 from categories.category import JumboCategory
+from datetime import datetime
 
 
 class Jumbo:
@@ -22,23 +23,29 @@ class Jumbo:
 
         return html
 
+    def __parse_price(self, price: str) -> float:
+        return float(price.split("$")[1].replace(",", ""))
+
     def __get_products(self, html_content: str) -> list[dict[str, str]]:
         items = []
         soup = BeautifulSoup(html_content, "html.parser")
 
-        products = soup.find_all("div", class_="product-item-details")
+        products = soup.find_all("div", class_="product-item-info")
 
         for product in products:
-            name = product.find("a", class_="product-item-tile__link").text.strip()
+            name = product.find("div", class_="product-item-tile__name").text.strip()
             price = product.find(
                 "span", class_="product-item-tile__price-current"
             ).text.strip()
-
+            image = product.find("img", class_="product-item-tile__img")["src"]
             items.append(
                 {
                     "productName": name,
-                    "productPrice": price,
+                    "productPrice": self.__parse_price(price),
                     "category": self.__category.value.lower(),
+                    "imageUrl": image,
+                    "origin": "jumbo",
+                    "extractionDate": str(datetime.now()).split(".")[0],
                 }
             )
 
@@ -64,7 +71,8 @@ class Jumbo:
 def main():
     jumbo = Jumbo(JumboCategory.CARNES)
     meats = jumbo.get_products()
-    Jumbo.print_products(meats)
+    # Jumbo.print_products(meats)
+    print(meats)
 
 
 if __name__ == "__main__":

@@ -15,9 +15,7 @@ product_collection = DBService().get_collection("products")
 @app.get(
     "/",
     description="Root of the API, returns the docs url",
-    responses={
-        200: {"description": "Root of the API, returns the docs url"},
-    },
+    responses={200: {"description": "Root of the API, returns the docs url"}},
 )
 def api_root():
     return {"docs": f"http://localhost:{PORT}/docs"}
@@ -72,16 +70,25 @@ def get_product(product_id: str):
 
 
 @app.get(
+    "/products/{category}",
+    response_model=list[Product],
+    description="Get all products by category",
+    responses={200: {"description": "Get all products by category"}},
+)
+def get_products_by_category(category: str):
+    products = serialize_products(product_collection.find({"category": category}))
+    return products
+
+
+@app.get(
     "/basic-basket",
     response_model=BasicBasket,
     description="Get the basic basket",
-    responses={
-        200: {"description": "Get the basic basket"},
-    },
+    responses={200: {"description": "Get the basic basket"}},
 )
 def get_basic_basket():
     basic_basket_products = serialize_products(
-        product_collection.find({"category": "basic_basket"})
+        product_collection.find({"category": "basket"})
     )
     basic_basket = serialize_basic_basket(basic_basket_products)
     return basic_basket

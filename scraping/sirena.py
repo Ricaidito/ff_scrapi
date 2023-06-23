@@ -1,4 +1,4 @@
-from scraping.categories.category import SirenaCategory
+from categories.category import SirenaCategory
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.support.ui import WebDriverWait
@@ -32,20 +32,28 @@ class Sirena:
 
         return html_doc
 
+    def __parse_price(self, price: str) -> float:
+        return float(price.split("$")[1].replace(",", ""))
+
+    def __extract_image_url(self, image: str) -> str:
+        return image.split("(")[1].split(")")[0]
+
     def __get_products(self, html_content: str) -> list[dict[str, str]]:
         items = []
         soup = BeautifulSoup(html_content, "html.parser")
 
-        products = soup.find_all("div", class_="item-product-info")
+        products = soup.find_all("div", class_="item-product")
 
         for product in products:
             name = product.find("p", class_="item-product-title").text.strip()
             price = product.find("p", class_="item-product-price").strong.text.strip()
+            image = product.find("a", class_="item-product-image")["style"]
             items.append(
                 {
                     "productName": name,
-                    "productPrice": price,
+                    "productPrice": self.__parse_price(price),
                     "category": self.__category.value.lower(),
+                    "imageUrl": self.__extract_image_url(image),
                     "origin": "sirena",
                     "extractionDate": str(datetime.now()).split(".")[0],
                 }
@@ -72,11 +80,8 @@ class Sirena:
 def main():
     sirena = Sirena(SirenaCategory.CARNES)
     meats = sirena.get_products()
-    sirena.switch_category(SirenaCategory.DELI)
-    deli = sirena.get_products()
 
     Sirena.print_products(meats)
-    Sirena.print_products(deli)
 
 
 if __name__ == "__main__":
