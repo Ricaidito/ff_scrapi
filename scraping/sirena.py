@@ -48,12 +48,14 @@ class Sirena:
             name = product.find("p", class_="item-product-title").text.strip()
             price = product.find("p", class_="item-product-price").strong.text.strip()
             image = product.find("a", class_="item-product-image")["style"]
+            item_url = product.find("a", class_="item-product-image")["href"]
             items.append(
                 {
                     "productName": name,
                     "productPrice": self.__parse_price(price),
                     "category": self.__category.value.lower(),
                     "imageUrl": self.__extract_image_url(image),
+                    "productUrl": f"https://sirena.do{item_url}",
                     "origin": "sirena",
                     "extractionDate": str(datetime.now()).split(".")[0],
                 }
@@ -81,7 +83,8 @@ def main():
     sirena = Sirena(SirenaCategory.CARNES)
     meats = sirena.get_products()
 
-    Sirena.print_products(meats)
+    # Sirena.print_products(meats)
+    print(meats)
 
 
 if __name__ == "__main__":

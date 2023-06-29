@@ -3,20 +3,22 @@ from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import time
+from datetime import datetime
 
 
 class Nacional:
     def __init__(self, wait_time_seconds: int = 7):
         self.__wait_time = wait_time_seconds
 
+    def __parse_price(self, price: str) -> float:
+        return float(price.replace("$", "").replace(",", ""))
+
     def __extract_products(self) -> list[dict[str, str]]:
         driver_options = ChromeOptions()
         driver_options.add_argument("--headless=new")
         driver = webdriver.Chrome(options=driver_options)
 
-        driver.get(
-            "https://supermercadosnacional.com/lacteos-y-huevos/leches"
-        )
+        driver.get("https://supermercadosnacional.com/lacteos-y-huevos/leches")
 
         last_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -39,8 +41,7 @@ class Nacional:
                     if new_height == last_height:
                         break
 
-            except Exception as e:
-                print(e)
+            except Exception:
                 if new_height == last_height:
                     break
 
@@ -57,11 +58,19 @@ class Nacional:
         for product in products:
             name = product.find("a", class_="product-item-link").text.strip()
             price = product.find("span", class_="price").text.strip()
+            image = product.find("img", class_="product-image-photo")["src"]
+            product_url = product.find("a", class_="product photo product-item-photo")[
+                "href"
+            ]
             items.append(
                 {
                     "productName": name,
-                    "productPrice": price,
+                    "productPrice": self.__parse_price(price),
                     "category": "res",
+                    "imageUrl": image,
+                    "productUrl": product_url,
+                    "origin": "nacional",
+                    "extractionDate": str(datetime.now()).split(".")[0],
                 }
             )
 

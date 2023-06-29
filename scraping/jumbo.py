@@ -38,12 +38,14 @@ class Jumbo:
                 "span", class_="product-item-tile__price-current"
             ).text.strip()
             image = product.find("img", class_="product-item-tile__img")["src"]
+            product_url = product.find("a", class_="product-item-tile__link")["href"]
             items.append(
                 {
                     "productName": name,
                     "productPrice": self.__parse_price(price),
                     "category": self.__category.value.lower(),
                     "imageUrl": image,
+                    "productUrl": product_url,
                     "origin": "jumbo",
                     "extractionDate": str(datetime.now()).split(".")[0],
                 }
