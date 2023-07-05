@@ -1,14 +1,17 @@
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
+from categories.category import NacionalCategory
 from bs4 import BeautifulSoup
 import time
 from datetime import datetime
 
 
 class Nacional:
-    def __init__(self, wait_time_seconds: int = 7):
+    def __init__(self, category: NacionalCategory, wait_time_seconds: int = 7):
         self.__wait_time = wait_time_seconds
+        self.__category = category
+        self.__base_url = f"https://supermercadosnacional.com/{self.__category.value}"
 
     def __parse_price(self, price: str) -> float:
         return float(price.replace("$", "").replace(",", ""))
@@ -18,7 +21,7 @@ class Nacional:
         driver_options.add_argument("--headless=new")
         driver = webdriver.Chrome(options=driver_options)
 
-        driver.get("https://supermercadosnacional.com/lacteos-y-huevos/leches")
+        driver.get(self.__base_url)
 
         last_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -82,6 +85,10 @@ class Nacional:
         products = self.__extract_products()
         return products
 
+    def switch_category(self, category: NacionalCategory):
+        self.__category = category
+        self.__base_url = f"https://supermercadosnacional.com/{self.__category.value}"
+
     def print_products(products: list[dict[str, str]]):
         for product in products:
             print(
@@ -91,7 +98,7 @@ class Nacional:
 
 
 def main():
-    nacional = Nacional()
+    nacional = Nacional(NacionalCategory.CARNES)
     products = nacional.get_products()
     Nacional.print_products(products)
 
