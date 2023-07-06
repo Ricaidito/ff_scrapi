@@ -69,7 +69,7 @@ class Nacional:
                 {
                     "productName": name,
                     "productPrice": self.__parse_price(price),
-                    "category": "res",
+                    "category": self.__category.value.lower(),
                     "imageUrl": image,
                     "productUrl": product_url,
                     "origin": "nacional",

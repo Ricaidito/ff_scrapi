@@ -38,7 +38,6 @@ class JumboCategory(Enum):
     SALAMIS = "embutidos-y-charcuteria/salami-cocido-y-curado.html"
 
 
-# TODO: Make this class and implement the categories in the nacional.py file
 class NacionalCategory(Enum):
     CARNES = "carnes-pescados-y-mariscos/carnes"
     PESCADOS = "carnes-pescados-y-mariscos/pescados-y-mariscos"

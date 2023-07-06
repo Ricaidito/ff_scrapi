@@ -1,13 +1,19 @@
 from pydantic import BaseModel
 
 
+class Price(BaseModel):
+    price: float
+    date: str
+
+
 class Product(BaseModel):
     id: str
     productName: str
-    productPrice: float
+    productPrices: list[Price]
     category: str
-    origin: str
     imageUrl: str
+    productUrl: str
+    origin: str
     extractionDate: str
 
 
