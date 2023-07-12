@@ -8,6 +8,8 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+from db.db_service import ProductService
+
 
 class Sirena:
     def __init__(self, category: SirenaCategory, wait_time_seconds: int = 5):
@@ -53,7 +55,7 @@ class Sirena:
             price = product.find("p", class_="item-product-price").strong.text.strip()
             image = product.find("a", class_="item-product-image")["style"]
             item_url = product.find("a", class_="item-product-image")["href"]
-            date = str(datetime.now())
+            date = datetime.now().isoformat()
             product_to_add = {
                 "productName": name,
                 "category": self.__category.value.lower(),
@@ -87,6 +89,9 @@ class Sirena:
 def main():
     sirena = Sirena(SirenaCategory.CARNES)
     meats, prices = sirena.get_products()
+
+    product_service = ProductService()
+    product_service.upload_products_and_prices_to_db(meats, prices)
 
 
 if __name__ == "__main__":

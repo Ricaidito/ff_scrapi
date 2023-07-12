@@ -23,20 +23,10 @@ class ProductService:
         if product is None:
             return None
 
-        # Gather all the price history entries for the product and sort them by date, the "date" field has this format "2023-07-06 14:28:40.349967"
-        price_history_entries = sorted(
-            self.__prices_collection.find({"productUrl": product["productUrl"]}),
-            key=lambda entry: entry["date"],
-            reverse=True,
-        )
+        price_history_entries = self.__prices_collection.find(
+            {"productUrl": product["productUrl"]}
+        ).sort("date", -1)
 
-        # Remove all the _id fields from the price history entries and productUrl from the product
-        for entry in price_history_entries:
-            print(entry)
-            del entry["_id"]
-            del entry["productUrl"]
-
-        # Add the priceHistory field to the product
         product["priceHistory"] = list(price_history_entries)
 
         return product
@@ -62,31 +52,10 @@ class ProductService:
                     "productUrl": {"$first": "$productUrl"},
                     "origin": {"$first": "$origin"},
                     "extractionDate": {"$first": "$extractionDate"},
-                    "priceHistory": {
-                        "$push": {
-                            # "_id": "$priceHistory._id",
-                            # "productUrl": "$priceHistory.productUrl,
-                            "productPrice": "$priceHistory.productPrice",
-                            "date": "$priceHistory.date",
-                        }
-                    },
+                    "priceHistory": {"$push": "$priceHistory"},
                 }
             },
-            {
-                "$addFields": {
-                    "priceHistory": {
-                        "$map": {
-                            "input": "$priceHistory",
-                            "as": "price",
-                            "in": {
-                                "_id": "$$price._id",
-                                "productPrice": "$$price.productPrice",
-                                "date": "$$price.date",
-                            },
-                        }
-                    }
-                }
-            },
+            {"$sort": {"productName": 1}},
             {"$skip": skip},
             {"$limit": limit},
         ]
@@ -103,8 +72,14 @@ class ProductService:
 
 
 def main():
+    page = 1
+    limit = 10
+    skip_value = (page - 1) * limit
+
     product_service = ProductService()
-    products = product_service.get_products(0, 10)
+
+    products = product_service.get_products(skip_value, limit)
+
     for product in products:
         pprint(product)
         print("\n")

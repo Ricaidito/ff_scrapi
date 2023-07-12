@@ -9,9 +9,7 @@ from db.db_service import DBService
 
 
 class MICMP:
-    def __init__(
-        self, category: MICMPCategory = MICMPCategory.CARNES, wait_time_seconds: int = 1
-    ):
+    def __init__(self, category: MICMPCategory, wait_time_seconds: int = 1):
         self.__url = "https://preciosjustos.micm.gob.do/"
         self.__wait_time = wait_time_seconds
         self.__category = category
@@ -41,37 +39,30 @@ class MICMP:
         driver.get(self.__url)
         driver.implicitly_wait(self.__wait_time)
 
-        # Switch to meat category
         meat_category = driver.find_element(
             By.CSS_SELECTOR,
             f"li.nav-item[data-category='{self.__category.value}'] a.nav-link",
         )
         meat_category.click()
 
-        # Wait for the click to be done
         driver.implicitly_wait(self.__wait_time)
 
         while True:
             try:
-                # Wait for the products to load
                 driver.implicitly_wait(self.__wait_time)
 
-                # Find the "Mas Productos" button and click it
                 mas_productos_button = driver.find_element(
                     By.XPATH, "//*[contains(text(), 'Mas Productos')]"
                 )
-                # Click the button using javascript
+
                 driver.execute_script("arguments[0].click();", mas_productos_button)
 
-                # If the button to get more products is hidden, stop the loop
                 if not mas_productos_button.is_displayed():
                     break
 
-            # If any of the elements are not found, stop the loop
             except NoSuchElementException:
                 break
 
-        # Wait for the products to load
         driver.implicitly_wait(self.__wait_time)
 
         html_content = driver.page_source
@@ -142,17 +133,6 @@ class MICMP:
     def switch_category(self, category: MICMPCategory):
         self.__category = category
 
-    def print_products(products: list[dict[str, str]]):
-        if "category" in products[0]:
-            for product in products:
-                print(
-                    f"{product['productName']}: {product['productPrice']} - {product['category']}"
-                )
-        else:
-            for product in products:
-                print(f"{product['productName']}: {product['productPrice']}")
-        print("\n")
-
 
 def main():
     products_collection = DBService().get_collection("products")
@@ -165,7 +145,7 @@ def main():
         MICMPCategory.VEGETALES,
     ]
 
-    # basic_basket = MICMP().get_basic_basket()
+    basic_basket = MICMP().get_basic_basket()
     # products_collection.insert_many(basic_basket)
 
     # for category in micmp_categories:
