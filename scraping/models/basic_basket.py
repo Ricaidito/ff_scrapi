@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from datetime import datetime
 
 
 class BasketProduct(BaseModel):
@@ -17,10 +16,6 @@ class BasicBasket(BaseModel):
     origin: str
 
 
-def serialize_basic_basket(basic_basket_products: list[BasketProduct]) -> BasicBasket:
-    return {
-        "productsAmount": len(basic_basket_products),
-        # "totalAmount": __calculate_total_amount(basic_basket_products),
-        "products": basic_basket_products,
-        "extractionDate": datetime.now().isoformat(),
-    }
+def serialize_basic_basket(basic_basket: BasicBasket) -> BasicBasket:
+    basic_basket["id"] = str(basic_basket.pop("_id"))
+    return basic_basket

@@ -78,18 +78,16 @@ def get_product(product_id: str):
 
 # TODO: Switch the logic to gather the basic basket to the db service
 
-# @app.get(
-#     "/basic-basket",
-#     response_model=BasicBasket,
-#     description="Get the basic basket",
-#     responses={200: {"description": "Get the basic basket"}},
-# )
-# def get_basic_basket():
-#     basic_basket_products = serialize_products(
-#         product_collection.find({"category": "basket"})
-#     )
-#     basic_basket = serialize_basic_basket(basic_basket_products)
-#     return basic_basket
+
+@app.get(
+    "/basic-basket",
+    response_model=BasicBasket,
+    description="Get the basic basket",
+    responses={200: {"description": "Get the basic basket"}},
+)
+def get_basic_basket():
+    basic_basket = serialize_basic_basket(product_service.get_last_basket())
+    return basic_basket
 
 
 if __name__ == "__main__":

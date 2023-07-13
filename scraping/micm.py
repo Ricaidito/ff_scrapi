@@ -111,6 +111,7 @@ class MICMP:
             "totalAmount": self.__calculate_total_amount(basic_basket_products),
             "products": basic_basket_products,
             "extractionDate": date,
+            "origin": "micmp",
         }
 
         return basket
@@ -172,13 +173,15 @@ def main():
         MICMPCategory.VEGETALES,
     ]
 
-    items, prices = MICMP(micmp_categories[0]).get_prices_by_category()
-    print(items)
-    print("\n")
-    print(prices)
+    # items, prices = MICMP(micmp_categories[0]).get_prices_by_category()
+    # print(items)
+    # print("\n")
+    # print(prices)
 
-    # db = ProductService()
-    # db.upload_basket_to_db(basic_basket)
+    basic_basket = MICMP(micmp_categories[0]).get_basic_basket()
+
+    db = ProductService()
+    db.upload_basket_to_db(basic_basket)
     # products_collection.insert_many(basic_basket)
 
     # for category in micmp_categories:
