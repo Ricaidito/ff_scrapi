@@ -1,3 +1,4 @@
+from typing import Union
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
@@ -16,7 +17,9 @@ class Nacional:
     def __parse_price(self, price: str) -> float:
         return float(price.replace("$", "").replace(",", ""))
 
-    def __extract_products(self) -> list[dict[str, str]]:
+    def __extract_products(
+        self,
+    ) -> tuple[list[dict[str, str]], list[dict[str, Union[str, float]]]]:
         driver_options = ChromeOptions()
         driver_options.add_argument("--headless=new")
         driver = webdriver.Chrome(options=driver_options)
@@ -53,6 +56,7 @@ class Nacional:
         html = driver.page_source
 
         items = []
+        prices = []
 
         soup = BeautifulSoup(html, "html.parser")
 
@@ -62,45 +66,48 @@ class Nacional:
             name = product.find("a", class_="product-item-link").text.strip()
             price = product.find("span", class_="price").text.strip()
             image = product.find("img", class_="product-image-photo")["src"]
-            product_url = product.find("a", class_="product photo product-item-photo")[
+            item_url = product.find("a", class_="product photo product-item-photo")[
                 "href"
             ]
-            items.append(
-                {
-                    "productName": name,
-                    "productPrice": self.__parse_price(price),
-                    "category": "res",
-                    "imageUrl": image,
-                    "productUrl": product_url,
-                    "origin": "nacional",
-                    "extractionDate": str(datetime.now()).split(".")[0],
-                }
-            )
+            date = datetime.now().isoformat()
+            product_to_add = {
+                "productName": name,
+                "category": self.__category.value.lower(),
+                "imageUrl": image,
+                "productUrl": item_url,
+                "origin": "nacional",
+                "extractionDate": date,
+            }
+            price_to_add = {
+                "productPrice": self.__parse_price(price),
+                "productUrl": item_url,
+                "date": date,
+            }
+            items.append(product_to_add)
+            prices.append(price_to_add)
 
         driver.quit()
 
-        return items
+        return items, prices
 
-    def get_products(self) -> list[dict[str, str]]:
-        products = self.__extract_products()
-        return products
+    def get_products(
+        self,
+    ) -> tuple[list[dict[str, str]], list[dict[str, Union[str, float]]]]:
+        items, prices = self.__extract_products()
+        return items, prices
 
     def switch_category(self, category: NacionalCategory):
         self.__category = category
         self.__base_url = f"https://supermercadosnacional.com/{self.__category.value}"
 
-    def print_products(products: list[dict[str, str]]):
-        for product in products:
-            print(
-                f"{product['productName']}: {product['productPrice']} - {product['category']}"
-            )
-        print("\n")
-
 
 def main():
     nacional = Nacional(NacionalCategory.CARNES)
-    products = nacional.get_products()
-    Nacional.print_products(products)
+    products, prices = nacional.get_products()
+
+    print(products)
+    print("\n")
+    print(prices)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+from typing import Union
 from categories.category import SirenaCategory
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
@@ -6,6 +7,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from datetime import datetime
+
+from db.db_service import ProductService
 
 
 class Sirena:
@@ -38,8 +41,11 @@ class Sirena:
     def __extract_image_url(self, image: str) -> str:
         return image.split("(")[1].split(")")[0]
 
-    def __get_products(self, html_content: str) -> list[dict[str, str]]:
+    def __get_products(
+        self, html_content: str
+    ) -> tuple[list[dict[str, str]], list[dict[str, Union[str, float]]]]:
         items = []
+        prices = []
         soup = BeautifulSoup(html_content, "html.parser")
 
         products = soup.find_all("div", class_="item-product")
@@ -49,42 +55,43 @@ class Sirena:
             price = product.find("p", class_="item-product-price").strong.text.strip()
             image = product.find("a", class_="item-product-image")["style"]
             item_url = product.find("a", class_="item-product-image")["href"]
-            items.append(
-                {
-                    "productName": name,
-                    "productPrice": self.__parse_price(price),
-                    "category": self.__category.value.lower(),
-                    "imageUrl": self.__extract_image_url(image),
-                    "productUrl": f"https://sirena.do{item_url}",
-                    "origin": "sirena",
-                    "extractionDate": str(datetime.now()).split(".")[0],
-                }
-            )
-        return items
+            date = datetime.now().isoformat()
+            product_to_add = {
+                "productName": name,
+                "category": self.__category.value.lower(),
+                "imageUrl": self.__extract_image_url(image),
+                "productUrl": f"https://sirena.do{item_url}",
+                "origin": "sirena",
+                "extractionDate": date,
+            }
+            price_to_add = {
+                "productPrice": self.__parse_price(price),
+                "productUrl": f"https://sirena.do{item_url}",
+                "date": date,
+            }
+            items.append(product_to_add)
+            prices.append(price_to_add)
+
+        return items, prices
 
     def switch_category(self, category: SirenaCategory):
         self.__category = category
         self.__base_url = f"https://sirena.do/products/category/{self.__category.value}?page=1&limit=0&sort=1"
 
-    def get_products(self) -> list[dict[str, str]]:
+    def get_products(
+        self,
+    ) -> tuple[list[dict[str, str]], list[dict[str, Union[str, float]]]]:
         html = self.__extract_products()
-        products = self.__get_products(html)
-        return products
-
-    def print_products(products: list[dict[str, str]]):
-        for product in products:
-            print(
-                f"{product['productName']}: {product['productPrice']} - {product['category']}"
-            )
-        print("\n")
+        products, prices = self.__get_products(html)
+        return products, prices
 
 
 def main():
     sirena = Sirena(SirenaCategory.CARNES)
-    meats = sirena.get_products()
+    meats, prices = sirena.get_products()
 
-    # Sirena.print_products(meats)
-    print(meats)
+    product_service = ProductService()
+    product_service.upload_products_and_prices_to_db(meats, prices)
 
 
 if __name__ == "__main__":

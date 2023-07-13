@@ -2,14 +2,12 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from scraping.models.product import Product, serialize_products, serialize_product
 from scraping.models.basic_basket import BasicBasket, serialize_basic_basket
-from scraping.db.db_service import DBService
-from bson import ObjectId
+from scraping.db.db_service import ProductService
 
 
 PORT = 8000
 app = FastAPI()
-
-product_collection = DBService().get_collection("products")
+product_service = ProductService()
 
 
 @app.get(
@@ -39,9 +37,7 @@ def get_products(page: int = 1, limit: int = 10):
 
     skip_value = (page - 1) * limit
 
-    products = serialize_products(
-        product_collection.find().skip(skip_value).limit(limit)
-    )
+    products = serialize_products(product_service.get_products(skip_value, limit))
 
     return products
 
@@ -56,9 +52,7 @@ def get_products(page: int = 1, limit: int = 10):
     },
 )
 def get_product(product_id: str):
-    product = serialize_product(
-        product_collection.find_one({"_id": ObjectId(product_id)})
-    )
+    product = serialize_product(product_service.get_product_by_id(product_id))
 
     if product is None:
         raise HTTPException(
@@ -69,15 +63,20 @@ def get_product(product_id: str):
     return product
 
 
-@app.get(
-    "/products/{category}",
-    response_model=list[Product],
-    description="Get all products by category",
-    responses={200: {"description": "Get all products by category"}},
-)
-def get_products_by_category(category: str):
-    products = serialize_products(product_collection.find({"category": category}))
-    return products
+# TODO: Switch the logic to gather the products by category to the db service
+
+# @app.get(
+#     "/products/{category}",
+#     response_model=list[Product],
+#     description="Get all products by category",
+#     responses={200: {"description": "Get all products by category"}},
+# )
+# def get_products_by_category(category: str):
+#     products = serialize_products(product_collection.find({"category": category}))
+#     return products
+
+
+# TODO: Switch the logic to gather the basic basket to the db service
 
 
 @app.get(
@@ -87,10 +86,7 @@ def get_products_by_category(category: str):
     responses={200: {"description": "Get the basic basket"}},
 )
 def get_basic_basket():
-    basic_basket_products = serialize_products(
-        product_collection.find({"category": "basket"})
-    )
-    basic_basket = serialize_basic_basket(basic_basket_products)
+    basic_basket = serialize_basic_basket(product_service.get_last_basket())
     return basic_basket
 
 

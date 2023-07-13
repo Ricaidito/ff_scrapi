@@ -1,3 +1,4 @@
+from typing import Union
 from categories.category import MICMPCategory
 from selenium import webdriver
 from bs4 import BeautifulSoup
@@ -5,13 +6,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver import ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime
-from db.db_service import DBService
+from db.db_service import ProductService
 
 
 class MICMP:
-    def __init__(
-        self, category: MICMPCategory = MICMPCategory.CARNES, wait_time_seconds: int = 1
-    ):
+    def __init__(self, category: MICMPCategory, wait_time_seconds: int = 1):
         self.__url = "https://preciosjustos.micm.gob.do/"
         self.__wait_time = wait_time_seconds
         self.__category = category
@@ -41,37 +40,30 @@ class MICMP:
         driver.get(self.__url)
         driver.implicitly_wait(self.__wait_time)
 
-        # Switch to meat category
         meat_category = driver.find_element(
             By.CSS_SELECTOR,
             f"li.nav-item[data-category='{self.__category.value}'] a.nav-link",
         )
         meat_category.click()
 
-        # Wait for the click to be done
         driver.implicitly_wait(self.__wait_time)
 
         while True:
             try:
-                # Wait for the products to load
                 driver.implicitly_wait(self.__wait_time)
 
-                # Find the "Mas Productos" button and click it
                 mas_productos_button = driver.find_element(
                     By.XPATH, "//*[contains(text(), 'Mas Productos')]"
                 )
-                # Click the button using javascript
+
                 driver.execute_script("arguments[0].click();", mas_productos_button)
 
-                # If the button to get more products is hidden, stop the loop
                 if not mas_productos_button.is_displayed():
                     break
 
-            # If any of the elements are not found, stop the loop
             except NoSuchElementException:
                 break
 
-        # Wait for the products to load
         driver.implicitly_wait(self.__wait_time)
 
         html_content = driver.page_source
@@ -83,31 +75,52 @@ class MICMP:
     def __parse_price(self, price: str) -> float:
         return float(price.split(" ")[1])
 
-    def __extract_basket(self, html_content: str) -> list[dict[str, str]]:
-        basic_basket = []
+    def __calculate_total_amount(
+        self, basic_basket_products: list[dict[str, str]]
+    ) -> float:
+        total_amount = 0
+        for product in basic_basket_products:
+            total_amount += product["productPrice"]
+
+        return round(total_amount, 2)
+
+    def __extract_basket(
+        self, html_content: str
+    ) -> dict[str, Union[str, float, list[dict[str, Union[str, float]]]]]:
+        basic_basket_products = []
         soup = BeautifulSoup(html_content, "html.parser")
 
         products = soup.find_all("div", class_="product-card")
+
+        date = datetime.now().isoformat()
 
         for product in products:
             name = product.find("span", class_="productTitle").text.strip()
             price = product.find("strong", class_="productPrice").text.strip()
             image = product.find("img").get("src")
-            basic_basket.append(
+            basic_basket_products.append(
                 {
                     "productName": name,
                     "productPrice": self.__parse_price(price),
-                    "category": "basket",
                     "imageUrl": f"https://preciosjustos.micm.gob.do/{image}",
-                    "origin": "micmp",
-                    "extractionDate": str(datetime.now()).split(".")[0],
                 }
             )
 
-        return basic_basket
+        basket = {
+            "productsAmount": len(basic_basket_products),
+            "totalAmount": self.__calculate_total_amount(basic_basket_products),
+            "products": basic_basket_products,
+            "extractionDate": date,
+            "origin": "micmp",
+        }
 
-    def __extract_section(self, html_content: str) -> list[dict[str, str]]:
+        return basket
+
+    def __extract_section(
+        self, html_content: str
+    ) -> tuple[list[dict[str, str]], list[dict[str, Union[str, float]]]]:
         items = []
+        prices = []
         soup = BeautifulSoup(html_content, "html.parser")
 
         products = soup.find_all("div", class_="product-card")
@@ -116,18 +129,25 @@ class MICMP:
             name = product.find("span", class_="productTitle").text.strip()
             price = product.find("strong", class_="productPrice").text.strip()
             image = product.find("img").get("src")
-            items.append(
-                {
-                    "productName": name,
-                    "productPrice": self.__parse_price(price),
-                    "category": self.__category.value.lower(),
-                    "imageUrl": f"https://preciosjustos.micm.gob.do/{image}",
-                    "origin": "micmp",
-                    "extractionDate": str(datetime.now()).split(".")[0],
-                }
-            )
+            item_url = product.find("span", class_="productTitle").text.strip()
+            date = datetime.now().isoformat()
+            product_to_add = {
+                "productName": name,
+                "category": self.__category.value.lower(),
+                "imageUrl": f"https://preciosjustos.micm.gob.do/{image}",
+                "productUrl": item_url,
+                "origin": "micmp",
+                "extractionDate": date,
+            }
+            price_to_add = {
+                "productPrice": self.__parse_price(price),
+                "productUrl": item_url,
+                "date": date,
+            }
+            items.append(product_to_add)
+            prices.append(price_to_add)
 
-        return items
+        return items, prices
 
     def get_basic_basket(self):
         html = self.__get_basket_html()
@@ -136,26 +156,14 @@ class MICMP:
 
     def get_prices_by_category(self):
         html = self.__get_section_html()
-        items = self.__extract_section(html)
-        return items
+        items, prices = self.__extract_section(html)
+        return items, prices
 
     def switch_category(self, category: MICMPCategory):
         self.__category = category
 
-    def print_products(products: list[dict[str, str]]):
-        if "category" in products[0]:
-            for product in products:
-                print(
-                    f"{product['productName']}: {product['productPrice']} - {product['category']}"
-                )
-        else:
-            for product in products:
-                print(f"{product['productName']}: {product['productPrice']}")
-        print("\n")
-
 
 def main():
-    products_collection = DBService().get_collection("products")
     micmp_categories = [
         MICMPCategory.CARNES,
         MICMPCategory.GRANOS,
@@ -165,7 +173,15 @@ def main():
         MICMPCategory.VEGETALES,
     ]
 
-    # basic_basket = MICMP().get_basic_basket()
+    # items, prices = MICMP(micmp_categories[0]).get_prices_by_category()
+    # print(items)
+    # print("\n")
+    # print(prices)
+
+    basic_basket = MICMP(micmp_categories[0]).get_basic_basket()
+
+    db = ProductService()
+    db.upload_basket_to_db(basic_basket)
     # products_collection.insert_many(basic_basket)
 
     # for category in micmp_categories:

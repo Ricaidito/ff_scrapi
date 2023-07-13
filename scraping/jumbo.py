@@ -1,3 +1,4 @@
+from typing import Union
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from bs4 import BeautifulSoup
@@ -26,8 +27,11 @@ class Jumbo:
     def __parse_price(self, price: str) -> float:
         return float(price.split("$")[1].replace(",", ""))
 
-    def __get_products(self, html_content: str) -> list[dict[str, str]]:
+    def __get_products(
+        self, html_content: str
+    ) -> tuple[list[dict[str, str]], list[dict[str, Union[str, float]]]]:
         items = []
+        prices = []
         soup = BeautifulSoup(html_content, "html.parser")
 
         products = soup.find_all("div", class_="product-item-info")
@@ -38,43 +42,45 @@ class Jumbo:
                 "span", class_="product-item-tile__price-current"
             ).text.strip()
             image = product.find("img", class_="product-item-tile__img")["src"]
-            product_url = product.find("a", class_="product-item-tile__link")["href"]
-            items.append(
-                {
-                    "productName": name,
-                    "productPrice": self.__parse_price(price),
-                    "category": self.__category.value.lower(),
-                    "imageUrl": image,
-                    "productUrl": product_url,
-                    "origin": "jumbo",
-                    "extractionDate": str(datetime.now()).split(".")[0],
-                }
-            )
+            item_url = product.find("a", class_="product-item-tile__link")["href"]
+            date = datetime.now().isoformat()
+            product_to_add = {
+                "productName": name,
+                "category": self.__category.value.lower(),
+                "imageUrl": image,
+                "productUrl": item_url,
+                "origin": "jumbo",
+                "extractionDate": date,
+            }
+            price_to_add = {
+                "productPrice": self.__parse_price(price),
+                "productUrl": item_url,
+                "date": date,
+            }
+            items.append(product_to_add)
+            prices.append(price_to_add)
 
-        return items
+        return items, prices
 
     def switch_category(self, category: JumboCategory):
         self.__category = category
         self.__url = f"https://jumbo.com.do/supermercado/{self.__category.value}?product_list_limit=all"
 
-    def get_products(self) -> list[dict[str, str]]:
+    def get_products(
+        self,
+    ) -> tuple[list[dict[str, str]], list[dict[str, Union[str, float]]]]:
         html = self.__extract_products()
-        products = self.__get_products(html)
-        return products
-
-    def print_products(products: list[dict[str, str]]):
-        for product in products:
-            print(
-                f"{product['productName']}: {product['productPrice']} - {product['category']}"
-            )
-        print("\n")
+        items, prices = self.__get_products(html)
+        return items, prices
 
 
 def main():
     jumbo = Jumbo(JumboCategory.CARNES)
-    meats = jumbo.get_products()
+    meats, prices = jumbo.get_products()
     # Jumbo.print_products(meats)
     print(meats)
+    print("\n")
+    print(prices)
 
 
 if __name__ == "__main__":
