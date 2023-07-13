@@ -16,6 +16,7 @@ class ProductService:
     def __init__(self):
         self.__products_collection = DBService().get_collection("products")
         self.__prices_collection = DBService().get_collection("prices")
+        self.__basic_basket_collection = DBService().get_collection("baskets")
 
     def get_product_by_id(self, product_id: str):
         product = self.__products_collection.find_one({"_id": ObjectId(product_id)})
@@ -69,6 +70,13 @@ class ProductService:
         self.__products_collection.insert_many(products)
         self.__prices_collection.insert_many(prices)
         print("Products and prices uploaded successfully to the database.")
+
+    def upload_basket_to_db(self, basket: dict[str, Union[str, float, list[dict]]]):
+        self.__basic_basket_collection.insert_one(basket)
+        print("Basket uploaded successfully to the database.")
+
+    def get_last_basket(self):
+        return self.__basic_basket_collection.find_one(sort=[("extractionDate", -1)])
 
 
 def main():
