@@ -4,9 +4,9 @@ from scraping.categories.sources.nacional_category import NacionalCategory
 from scraping.categories.sources.sirena_category import SirenaCategory
 from scraping.jumbo import Jumbo
 from scraping.micm import MICMP
-from scraping.db.db_service import ProductService
 from scraping.nacional import Nacional
 from scraping.sirena import Sirena
+from scraping.db.db_service import ProductService
 
 
 class ProductScrapper:
@@ -27,7 +27,7 @@ class ProductScrapper:
         for category in MICMPCategory.__members__.values():
             micmp = MICMP(category)
             print(f"\nGetting prices for category: [{category}]")
-            products, prices = micmp.get_prices_by_category()
+            products, prices = micmp.get_products()
 
             if upload_to_db:
                 print(f"Uploading products to db for category: [{category}]")
@@ -94,6 +94,7 @@ class ProductScrapper:
         nacional: bool,
         upload_to_db: bool = True,
     ):
+        print("\nStarting scraping...\n")
         if micm:
             self.__scrap_micm(upload_to_db)
         if sirena:
@@ -102,6 +103,7 @@ class ProductScrapper:
             self.__scrap_jumbo(upload_to_db)
         if nacional:
             self.__scrap_nacional(upload_to_db)
+        print("\nScraping done.\n")
 
 
 # ProductScrapper().do_scraping(

@@ -4,6 +4,7 @@ from selenium.webdriver import ChromeOptions
 from bs4 import BeautifulSoup
 from datetime import datetime
 from scraping.categories.sources.jumbo_category import JumboCategory
+from scraping.categories.product_mapper import ProductMapper
 
 
 class Jumbo:
@@ -46,7 +47,7 @@ class Jumbo:
             date = datetime.now().isoformat()
             product_to_add = {
                 "productName": name,
-                "category": self.__category.value.lower(),
+                "category": ProductMapper.get_product_category(self.__category).value,
                 "imageUrl": image,
                 "productUrl": item_url,
                 "origin": "jumbo",

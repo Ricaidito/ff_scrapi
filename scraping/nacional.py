@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import time
 from datetime import datetime
 from scraping.categories.sources.nacional_category import NacionalCategory
+from scraping.categories.product_mapper import ProductMapper
 
 
 class Nacional:
@@ -72,7 +73,7 @@ class Nacional:
             date = datetime.now().isoformat()
             product_to_add = {
                 "productName": name,
-                "category": self.__category.value.lower(),
+                "category": ProductMapper.get_product_category(self.__category).value,
                 "imageUrl": image,
                 "productUrl": item_url,
                 "origin": "nacional",

@@ -154,7 +154,7 @@ class MICMP:
         basic_basket = self.__extract_basket(html)
         return basic_basket
 
-    def get_prices_by_category(self):
+    def get_products(self):
         html = self.__get_section_html()
         items, prices = self.__extract_section(html)
         return items, prices

@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from datetime import datetime
 from scraping.categories.sources.sirena_category import SirenaCategory
+from scraping.categories.product_mapper import ProductMapper
 
 
 class Sirena:
@@ -56,7 +57,7 @@ class Sirena:
             date = datetime.now().isoformat()
             product_to_add = {
                 "productName": name,
-                "category": self.__category.value.lower(),
+                "category": ProductMapper.get_product_category(self.__category).value,
                 "imageUrl": self.__extract_image_url(image),
                 "productUrl": f"https://sirena.do{item_url}",
                 "origin": "sirena",
