@@ -2,10 +2,10 @@ from typing import Union
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
-from categories.category import NacionalCategory
 from bs4 import BeautifulSoup
 import time
 from datetime import datetime
+from scraping.categories.sources.nacional_category import NacionalCategory
 
 
 class Nacional:
@@ -99,16 +99,3 @@ class Nacional:
     def switch_category(self, category: NacionalCategory):
         self.__category = category
         self.__base_url = f"https://supermercadosnacional.com/{self.__category.value}"
-
-
-def main():
-    nacional = Nacional(NacionalCategory.CARNES)
-    products, prices = nacional.get_products()
-
-    print(products)
-    print("\n")
-    print(prices)
-
-
-if __name__ == "__main__":
-    main()

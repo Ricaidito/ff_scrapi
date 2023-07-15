@@ -1,12 +1,12 @@
 from typing import Union
-from categories.category import MICMPCategory
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime
-from db.db_service import ProductService
+from scraping.categories.sources.micm_category import MICMPCategory
+from scraping.categories.product_mapper import ProductMapper
 
 
 class MICMP:
@@ -133,7 +133,7 @@ class MICMP:
             date = datetime.now().isoformat()
             product_to_add = {
                 "productName": name,
-                "category": self.__category.value.lower(),
+                "category": ProductMapper.get_product_category(self.__category).value,
                 "imageUrl": f"https://preciosjustos.micm.gob.do/{image}",
                 "productUrl": item_url,
                 "origin": "micmp",
@@ -161,36 +161,3 @@ class MICMP:
 
     def switch_category(self, category: MICMPCategory):
         self.__category = category
-
-
-def main():
-    micmp_categories = [
-        MICMPCategory.CARNES,
-        MICMPCategory.GRANOS,
-        MICMPCategory.EMBUTIDOS,
-        MICMPCategory.LACTEOS,
-        MICMPCategory.PAN,
-        MICMPCategory.VEGETALES,
-    ]
-
-    # items, prices = MICMP(micmp_categories[0]).get_prices_by_category()
-    # print(items)
-    # print("\n")
-    # print(prices)
-
-    basic_basket = MICMP(micmp_categories[0]).get_basic_basket()
-
-    db = ProductService()
-    db.upload_basket_to_db(basic_basket)
-    # products_collection.insert_many(basic_basket)
-
-    # for category in micmp_categories:
-    #     micmp = MICMP(category)
-    #     products = micmp.get_prices_by_category()
-    #     products_collection.insert_many(products)
-
-    print("Hi")
-
-
-if __name__ == "__main__":
-    main()

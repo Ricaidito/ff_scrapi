@@ -2,8 +2,8 @@ from typing import Union
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from bs4 import BeautifulSoup
-from categories.category import JumboCategory
 from datetime import datetime
+from scraping.categories.sources.jumbo_category import JumboCategory
 
 
 class Jumbo:
@@ -72,16 +72,3 @@ class Jumbo:
         html = self.__extract_products()
         items, prices = self.__get_products(html)
         return items, prices
-
-
-def main():
-    jumbo = Jumbo(JumboCategory.CARNES)
-    meats, prices = jumbo.get_products()
-    # Jumbo.print_products(meats)
-    print(meats)
-    print("\n")
-    print(prices)
-
-
-if __name__ == "__main__":
-    main()

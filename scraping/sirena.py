@@ -1,5 +1,4 @@
 from typing import Union
-from categories.category import SirenaCategory
 from selenium import webdriver
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.support.ui import WebDriverWait
@@ -7,8 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 from datetime import datetime
-
-from db.db_service import ProductService
+from scraping.categories.sources.sirena_category import SirenaCategory
 
 
 class Sirena:
@@ -84,15 +82,3 @@ class Sirena:
         html = self.__extract_products()
         products, prices = self.__get_products(html)
         return products, prices
-
-
-def main():
-    sirena = Sirena(SirenaCategory.CARNES)
-    meats, prices = sirena.get_products()
-
-    product_service = ProductService()
-    product_service.upload_products_and_prices_to_db(meats, prices)
-
-
-if __name__ == "__main__":
-    main()

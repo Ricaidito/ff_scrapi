@@ -67,9 +67,30 @@ class ProductService:
     def upload_products_and_prices_to_db(
         self, products: list[dict[str, str]], prices: list[dict[str, Union[str, float]]]
     ):
-        self.__products_collection.insert_many(products)
+        product_urls = [product["productUrl"] for product in products]
+
+        existing_products = self.__products_collection.find(
+            {"productUrl": {"$in": product_urls}}
+        )
+
+        existing_product_urls = set(
+            product["productUrl"] for product in existing_products
+        )
+
+        filtered_products = [
+            product
+            for product in products
+            if product["productUrl"] not in existing_product_urls
+        ]
+
+        if filtered_products:
+            added = self.__products_collection.insert_many(filtered_products)
+            print(f"Added {len(added.inserted_ids)} new products.")
+        else:
+            print("No new products to add.")
+
         self.__prices_collection.insert_many(prices)
-        print("Products and prices uploaded successfully to the database.")
+        print("Prices uploaded successfully to the database.")
 
     def upload_basket_to_db(self, basket: dict[str, Union[str, float, list[dict]]]):
         self.__basic_basket_collection.insert_one(basket)
